@@ -11,7 +11,7 @@ namespace TestApp.Controllers
         [Route("")]
         public string Get()
         {
-            return "hello";
+            return "hello123";
         }
 
         [HttpGet]
