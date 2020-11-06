@@ -6,6 +6,7 @@ using Microsoft.IdentityModel.Tokens;
 using System;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
+using System.IO;
 using System.Linq;
 using System.Security.Claims;
 using System.Security.Cryptography;
@@ -24,12 +25,17 @@ namespace TestApp.Services
         Task<UserAuthData> RefreshToken(string token);
         Task<UserAuthData> Register(Register model);
         Task<Account> Get(HttpContext context);
+        Task<Account> Update(HttpContext context, Update model);
+        Task<bool> Delete(HttpContext context);
+        Task<bool> SaveImage(HttpContext context);
+        Task<MemoryStream> GetImage(HttpContext context);
+        bool DeleteImage(HttpContext context);
     }
 
     public class UserService : IUserService
     {
         private readonly UserManager<ApplicationUser> _userManager;
-        private IOptions<AppSettingsModel> _settings;
+        private readonly IOptions<AppSettingsModel> _settings;
 
         public UserService(UserManager<ApplicationUser> userManager, IOptions<AppSettingsModel> settings)
         {
@@ -72,7 +78,9 @@ namespace TestApp.Services
             {
                 Email = model.Email,
                 SecurityStamp = Guid.NewGuid().ToString(),
-                UserName = model.Username
+                UserName = model.Username,
+                FirstName = model.FirstName,
+                LastName = model.LastName
             };
             var result = await _userManager.CreateAsync(user, model.Password);
             if (!result.Succeeded)
@@ -83,10 +91,6 @@ namespace TestApp.Services
 
         public async Task<Account> Get(HttpContext context)
         {
-            var identity = context.User.Identity as ClaimsIdentity;
-            if (identity == null) return null;
-
-            IEnumerable<Claim> claims = identity.Claims;
             string userName = TokensHelper.GetClaimFromJwt(context, ClaimTypes.Name);
 
             var user = await _userManager.FindByNameAsync(userName);
@@ -96,8 +100,121 @@ namespace TestApp.Services
             return new Account
             {
                 Username = user.UserName,
-                Email = user.Email
+                Email = user.Email,
+                FirstName = user.FirstName,
+                LastName = user.LastName
             };
+        }
+
+        public async Task<Account> Update(HttpContext context, Update model)
+        {
+            string userName = TokensHelper.GetClaimFromJwt(context, ClaimTypes.Name);
+
+            var user = await _userManager.FindByNameAsync(userName);
+            if (user == null)
+                return null;
+
+            user.FirstName = model.FirstName;
+            user.LastName = model.LastName;
+
+            var res = await _userManager.UpdateAsync(user);
+
+            if (!res.Succeeded)
+                return null;
+
+            return new Account
+            {
+                Username = user.UserName,
+                Email = user.Email,
+                FirstName = user.FirstName,
+                LastName = user.LastName
+            };
+        }
+
+        public async Task<bool> Delete(HttpContext context)
+        {
+            string userName = TokensHelper.GetClaimFromJwt(context, ClaimTypes.Name);
+
+            var user = await _userManager.FindByNameAsync(userName);
+            if (user == null)
+                return true;
+
+            var res = await _userManager.DeleteAsync(user);
+
+            if (!res.Succeeded)
+                return false;
+
+            return true;
+        }
+
+        public async Task<bool> SaveImage(HttpContext context)
+        {
+            var file = context.Request.Form.Files[0];
+
+            if (file.Length > 100000)
+                return false;
+
+            string ext = Path.GetExtension(file.FileName);
+            var path = Path.Combine("Resources", "Images");
+
+            string userName = TokensHelper.GetClaimFromJwt(context, ClaimTypes.Name);
+            string imageName = userName + "Avatar" + ext;
+
+            var fullPath = Path.Combine(path, imageName);
+
+            using (var stream = new FileStream(fullPath, FileMode.Create))
+            {
+                await file.CopyToAsync(stream);
+            }
+
+            return true;
+        }
+
+        public async Task<MemoryStream> GetImage(HttpContext context)
+        {
+            try
+            {
+                var path = Path.Combine("Resources", "Images");
+
+                string userName = TokensHelper.GetClaimFromJwt(context, ClaimTypes.Name);
+                string imageName = userName + "Avatar.png";
+
+                var fullPath = Path.Combine(path, imageName);
+
+                var memory = new MemoryStream();
+                using (var stream = new FileStream(fullPath, FileMode.Open))
+                {
+                    await stream.CopyToAsync(memory);
+                }
+                memory.Position = 0;
+
+                return memory;
+            }
+            catch (Exception)
+            {
+                return null;
+            }
+        }
+
+        public bool DeleteImage(HttpContext context)
+        {
+            try
+            {
+                var path = Path.Combine("Resources", "Images");
+
+                string userName = TokensHelper.GetClaimFromJwt(context, ClaimTypes.Name);
+                string imageName = userName + "Avatar.png";
+
+                var fullPath = Path.Combine(path, imageName);
+
+                File.Delete(fullPath);
+
+                return true;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
         }
 
         private async Task<UserAuthData> CreateTokens(ApplicationUser user, UserType userType, bool rememberMe)

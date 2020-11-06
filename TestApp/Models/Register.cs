@@ -13,5 +13,14 @@ namespace TestApp.Models
 
         [Required(ErrorMessage = "Password is required")]
         public string Password { get; set; }
+
+        [Compare("Password", ErrorMessage = "Confirm password doesn't match, Type again!")]
+        public string ConfirmPassword { get; set; }
+
+        [Required(ErrorMessage = "FirstName is required")]
+        public string FirstName { get; set; }
+
+        [Required(ErrorMessage = "LastName is required")]
+        public string LastName { get; set; }
     }
 }

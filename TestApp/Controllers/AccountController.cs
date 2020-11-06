@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System;
 using System.Threading.Tasks;
 using TestApp.Models;
 using TestApp.Services;
@@ -54,6 +55,19 @@ namespace TestApp.Controllers
             return Ok(account);
         }
 
+        [HttpPut]
+        [Authorize]
+        [Route("")]
+        public async Task<IActionResult> Update(Update model)
+        {
+            var account = await _userService.Update(HttpContext, model);
+
+            if (account == null)
+                return BadRequest();
+
+            return Ok(account);
+        }
+
         [HttpPost]
         [Route("register")]
         public async Task<IActionResult> Register([FromBody] Register model)
@@ -64,6 +78,58 @@ namespace TestApp.Controllers
                 return BadRequest();
 
             return Ok(authData);
+        }
+
+        [HttpDelete]
+        [Authorize]
+        [Route("")]
+        public async Task<IActionResult> Delete()
+        {
+            var success = await _userService.Delete(HttpContext);
+
+            if (!success)
+                return BadRequest();
+
+            return Ok(success);
+        }
+
+        [HttpPut]
+        [Authorize]
+        [Route("image")]
+        public async Task<IActionResult> UploadImage()
+        {
+            var success = await _userService.SaveImage(HttpContext);
+
+            if (!success)
+                return BadRequest();
+
+            return Ok(success);
+        }
+
+        [HttpGet]
+        [Authorize]
+        [Route("image")]
+        public async Task<IActionResult> GetImage()
+        {
+            var memory = await _userService.GetImage(HttpContext);
+
+            if (memory == null)
+                return BadRequest("Image not found");
+
+            return Ok(Convert.ToBase64String(memory.GetBuffer()));
+        }
+
+        [HttpDelete]
+        [Authorize]
+        [Route("image")]
+        public IActionResult DeleteImage()
+        {
+            var success = _userService.DeleteImage(HttpContext);
+
+            if (!success)
+                return BadRequest();
+
+            return Ok(success);
         }
 
         //[HttpPost]
