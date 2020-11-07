@@ -158,7 +158,7 @@ namespace TestApp.Services
             var path = Path.Combine("Resources", "Images");
 
             string userName = TokensHelper.GetClaimFromJwt(context, ClaimTypes.Name);
-            string imageName = userName + "Avatar" + ext;
+            string imageName = userName + "Avatar";
 
             var fullPath = Path.Combine(path, imageName);
 
@@ -177,12 +177,14 @@ namespace TestApp.Services
                 var path = Path.Combine("Resources", "Images");
 
                 string userName = TokensHelper.GetClaimFromJwt(context, ClaimTypes.Name);
-                string imageName = userName + "Avatar.png";
+                string imageName = userName + "Avatar";
 
-                var fullPath = Path.Combine(path, imageName);
+                //var fileName = Directory.EnumerateFiles(@path, imageName).FirstOrDefault();
+
+                var fileName = Path.Combine(path, imageName);
 
                 var memory = new MemoryStream();
-                using (var stream = new FileStream(fullPath, FileMode.Open))
+                using (var stream = new FileStream(fileName, FileMode.Open))
                 {
                     await stream.CopyToAsync(memory);
                 }

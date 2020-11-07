@@ -25,7 +25,7 @@ namespace TestApp.Controllers
             var authData = await _userService.Authenticate(model);
 
             if (authData == null)
-                return Unauthorized();
+                return BadRequest();
 
             return Ok(authData);
         }
@@ -37,7 +37,7 @@ namespace TestApp.Controllers
             var authData = await _userService.RefreshToken(token.Token);
 
             if (authData == null)
-                return Unauthorized();
+                return BadRequest();
 
             return Ok(authData);
         }
