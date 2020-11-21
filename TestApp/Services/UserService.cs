@@ -80,7 +80,9 @@ namespace TestApp.Services
                 SecurityStamp = Guid.NewGuid().ToString(),
                 UserName = model.Username,
                 FirstName = model.FirstName,
-                LastName = model.LastName
+                LastName = model.LastName,
+                PhoneNumber = model.PhoneNumber,
+                Address = model.Address
             };
             var result = await _userManager.CreateAsync(user, model.Password);
             if (!result.Succeeded)
@@ -102,7 +104,9 @@ namespace TestApp.Services
                 Username = user.UserName,
                 Email = user.Email,
                 FirstName = user.FirstName,
-                LastName = user.LastName
+                LastName = user.LastName,
+                Address = user.Address,
+                PhoneNumber = user.PhoneNumber
             };
         }
 
@@ -116,6 +120,8 @@ namespace TestApp.Services
 
             user.FirstName = model.FirstName;
             user.LastName = model.LastName;
+            user.PhoneNumber = model.PhoneNumber;
+            user.Address = model.Address;
 
             var res = await _userManager.UpdateAsync(user);
 
@@ -127,7 +133,9 @@ namespace TestApp.Services
                 Username = user.UserName,
                 Email = user.Email,
                 FirstName = user.FirstName,
-                LastName = user.LastName
+                LastName = user.LastName,
+                Address = user.Address,
+                PhoneNumber = user.PhoneNumber
             };
         }
 
