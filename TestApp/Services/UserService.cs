@@ -30,6 +30,7 @@ namespace TestApp.Services
         Task<bool> SaveImage(HttpContext context);
         Task<MemoryStream> GetImage(HttpContext context);
         bool DeleteImage(HttpContext context);
+        Task<UserAuthData> ChangePassword(HttpContext context, ChangePassword change);
     }
 
     public class UserService : IUserService
@@ -226,6 +227,23 @@ namespace TestApp.Services
                 return false;
             }
         }
+
+        public async Task<UserAuthData> ChangePassword(HttpContext context, ChangePassword change)
+        {
+            string userName = TokensHelper.GetClaimFromJwt(context, ClaimTypes.Name);
+
+            var user = await _userManager.FindByNameAsync(userName);
+            if (user == null)
+                return null;
+
+            var res = await _userManager.ChangePasswordAsync(user, change.OldPassword, change.NewPassword);
+
+            if (!res.Succeeded)
+                return null;
+
+            return await CreateTokens(user, UserType.User, true);
+        }
+
 
         private async Task<UserAuthData> CreateTokens(ApplicationUser user, UserType userType, bool rememberMe)
         {

@@ -132,6 +132,19 @@ namespace TestApp.Controllers
             return Ok(success);
         }
 
+        [HttpPost]
+        [Authorize]
+        [Route("ChangePassword")]
+        public async Task<IActionResult> ChangePassword(ChangePassword model)
+        {
+            var authData = await _userService.ChangePassword(HttpContext, model);
+
+            if (authData == null)
+                return BadRequest();
+
+            return Ok(authData);
+        }
+
         //[HttpPost]
         //[Route("register-admin")]
         //public async Task<IActionResult> RegisterAdmin([FromBody] Register model)
