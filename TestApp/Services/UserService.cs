@@ -214,7 +214,7 @@ namespace TestApp.Services
                 var path = Path.Combine("Resources", "Images");
 
                 string userName = TokensHelper.GetClaimFromJwt(context, ClaimTypes.Name);
-                string imageName = userName + "Avatar.png";
+                string imageName = userName + "Avatar";
 
                 var fullPath = Path.Combine(path, imageName);
 
