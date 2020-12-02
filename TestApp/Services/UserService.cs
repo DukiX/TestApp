@@ -13,6 +13,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 using TestApp.Enums;
+using TestApp.ExceptionHandling;
 using TestApp.Identity;
 using TestApp.Models;
 using TestApp.Tools;
@@ -51,18 +52,18 @@ namespace TestApp.Services
             {
                 return await CreateTokens(user, UserType.User, true);
             }
-            return null;
+            throw new ErrorException(ErrorCode.AuthorizationFailed, "Uneli ste pogrešno korisničko ime ili lozinku. Pokušajte ponovo.");
         }
 
         public async Task<UserAuthData> RefreshToken(string token)
         {
             var user = await _userManager.Users.Include(u => u.RefreshTokens).FirstOrDefaultAsync(u => u.RefreshTokens.Any(rt => rt.Token == token));
-            if (user == null) return null;
+            if (user == null) throw new ErrorException(ErrorCode.RefreshTokenInvalid, "Kredencijali istekli. Ulogujte se ponovo.");
 
             var refreshToken = user.RefreshTokens.Single(x => x.Token == token);
 
             if (refreshToken.RefreshTokenExpiration < DateTime.UtcNow || !refreshToken.IsActive)
-                return null;
+                throw new ErrorException(ErrorCode.RefreshTokenInvalid, "Kredencijali istekli. Ulogujte se ponovo.");
 
             await DeleteOldRefreshToken(user, token);
 
@@ -73,7 +74,7 @@ namespace TestApp.Services
         {
             var userExists = await _userManager.FindByNameAsync(model.Username);
             if (userExists != null)
-                return null;
+                throw new ErrorException(ErrorCode.UsernameAlreadyExists, "Greška pri kreiranju korisnika. Korisničko ime već postoji u sistemu.");
 
             ApplicationUser user = new ApplicationUser()
             {
@@ -87,7 +88,7 @@ namespace TestApp.Services
             };
             var result = await _userManager.CreateAsync(user, model.Password);
             if (!result.Succeeded)
-                return null;
+                throw new ErrorException(ErrorCode.UserRegistrationError, "Greška pri kreiranju korisnika. Email adresa već postoji u sistemu.");
 
             return await CreateTokens(user, UserType.User, true);
         }
@@ -98,7 +99,7 @@ namespace TestApp.Services
 
             var user = await _userManager.FindByNameAsync(userName);
             if (user == null)
-                return null;
+                throw new ErrorException(ErrorCode.UserNotFound, "Korisnik ne postoji u sistemu.");
 
             return new Account
             {
@@ -117,7 +118,7 @@ namespace TestApp.Services
 
             var user = await _userManager.FindByNameAsync(userName);
             if (user == null)
-                return null;
+                throw new ErrorException(ErrorCode.UserNotFound, "Korisnik ne postoji u sistemu.");
 
             user.FirstName = model.FirstName;
             user.LastName = model.LastName;
@@ -127,7 +128,7 @@ namespace TestApp.Services
             var res = await _userManager.UpdateAsync(user);
 
             if (!res.Succeeded)
-                return null;
+                throw new ErrorException(ErrorCode.UserUpdateError, "Greška pri čuvanju profila.");
 
             return new Account
             {
@@ -161,7 +162,7 @@ namespace TestApp.Services
             var file = context.Request.Form.Files[0];
 
             if (file.Length > 100000)
-                return false;
+                throw new ErrorException(ErrorCode.AvatarTooLarge, "Slika zauzima previše prostora.");
 
             string ext = Path.GetExtension(file.FileName);
             var path = Path.Combine("Resources", "Images");
@@ -224,7 +225,7 @@ namespace TestApp.Services
             }
             catch (Exception)
             {
-                return false;
+                throw new ErrorException(ErrorCode.AvatarNotFound, "Slika nije pronađena.");
             }
         }
 
@@ -234,12 +235,12 @@ namespace TestApp.Services
 
             var user = await _userManager.FindByNameAsync(userName);
             if (user == null)
-                return null;
+                throw new ErrorException(ErrorCode.UserNotFound, "Korisnik ne postoji u sistemu.");
 
             var res = await _userManager.ChangePasswordAsync(user, change.OldPassword, change.NewPassword);
 
             if (!res.Succeeded)
-                return null;
+                throw new ErrorException(ErrorCode.PasswordChangeFailed, "Greška pri menjanju lozinke.");
 
             return await CreateTokens(user, UserType.User, true);
         }

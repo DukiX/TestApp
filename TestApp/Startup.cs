@@ -9,6 +9,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using TestApp.ExceptionHandling;
 using TestApp.Identity;
 using TestApp.Models;
 using TestApp.Services;
@@ -88,6 +89,7 @@ namespace TestApp
             {
                 app.UseDeveloperExceptionPage();
             }
+            app.UseMiddleware<ErrorHandlerMiddleware>();
 
             app.UseCors("MyPolicy");
 
@@ -102,6 +104,7 @@ namespace TestApp
             {
                 endpoints.MapControllers();
             });
+
         }
     }
 }
