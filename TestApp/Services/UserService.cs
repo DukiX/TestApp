@@ -178,10 +178,11 @@ namespace TestApp.Services
                 throw new ErrorException(ErrorCode.ImageTooLarge, "Slika zauzima previše prostora.");
 
             string ext = Path.GetExtension(file.FileName);
-            var path = Path.Combine("Resources", "Images");
+            var path1 = Path.Combine("Resources", "Images");
+            var path = Path.Combine(path1, "Avatars");
 
             string userName = TokensHelper.GetClaimFromJwt(context, ClaimTypes.Name);
-            string imageName = userName + "Avatar";
+            string imageName = userName;
 
             var fullPath = Path.Combine(path, imageName);
 
@@ -197,10 +198,11 @@ namespace TestApp.Services
         {
             try
             {
-                var path = Path.Combine("Resources", "Images");
+                var path1 = Path.Combine("Resources", "Images");
+                var path = Path.Combine(path1, "Avatars");
 
                 string userName = TokensHelper.GetClaimFromJwt(context, ClaimTypes.Name);
-                string imageName = userName + "Avatar";
+                string imageName = userName;
 
                 //var fileName = Directory.EnumerateFiles(@path, imageName).FirstOrDefault();
 
@@ -225,10 +227,11 @@ namespace TestApp.Services
         {
             try
             {
-                var path = Path.Combine("Resources", "Images");
+                var path1 = Path.Combine("Resources", "Images");
+                var path = Path.Combine(path1, "Avatars");
 
                 string userName = TokensHelper.GetClaimFromJwt(context, ClaimTypes.Name);
-                string imageName = userName + "Avatar";
+                string imageName = userName;
 
                 var fullPath = Path.Combine(path, imageName);
 
