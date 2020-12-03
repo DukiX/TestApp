@@ -163,10 +163,19 @@ namespace TestApp.Services
 
         public async Task<bool> SaveImage(HttpContext context)
         {
-            var file = context.Request.Form.Files[0];
-
+            IFormFile file;
+            try
+            {
+                file = context.Request.Form.Files[0];
+                if (file == null)
+                    throw new ErrorException(ErrorCode.ImageNotFound, "Slika nije pronađena.");
+            }
+            catch (Exception)
+            {
+                throw new ErrorException(ErrorCode.ImageNotFound, "Slika nije pronađena.");
+            }
             if (file.Length > 100000)
-                throw new ErrorException(ErrorCode.AvatarTooLarge, "Slika zauzima previše prostora.");
+                throw new ErrorException(ErrorCode.ImageTooLarge, "Slika zauzima previše prostora.");
 
             string ext = Path.GetExtension(file.FileName);
             var path = Path.Combine("Resources", "Images");
@@ -229,7 +238,7 @@ namespace TestApp.Services
             }
             catch (Exception)
             {
-                throw new ErrorException(ErrorCode.AvatarNotFound, "Slika nije pronađena.");
+                throw new ErrorException(ErrorCode.ImageNotFound, "Slika nije pronađena.");
             }
         }
 

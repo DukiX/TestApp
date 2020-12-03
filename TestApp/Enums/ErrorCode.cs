@@ -8,8 +8,8 @@
         UserRegistrationError = 3,
         UserNotFound = 4,
         UserUpdateError = 5,
-        AvatarTooLarge = 6,
-        AvatarNotFound = 7,
+        ImageTooLarge = 6,
+        ImageNotFound = 7,
         PasswordChangeFailed = 8,
         DbError = 9
     }
