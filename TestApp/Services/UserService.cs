@@ -166,7 +166,7 @@ namespace TestApp.Services
             IFormFile file;
             try
             {
-                file = context.Request.Form.Files[0];
+                file = context.Request.Form.Files.FirstOrDefault(f => f.Name == "file");
                 if (file == null)
                     throw new ErrorException(ErrorCode.ImageNotFound, "Slika nije pronađena.");
             }
