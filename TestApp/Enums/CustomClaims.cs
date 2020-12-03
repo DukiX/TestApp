@@ -3,6 +3,6 @@
     public enum CustomClaims
     {
         UserId,
-        UserType
+        UserRole
     }
 }

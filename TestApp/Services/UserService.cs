@@ -50,7 +50,8 @@ namespace TestApp.Services
             var user = await _userManager.Users.Include(u => u.RefreshTokens).FirstOrDefaultAsync(u => u.UserName == model.Username);
             if (user != null && await _userManager.CheckPasswordAsync(user, model.Password))
             {
-                return await CreateTokens(user, UserType.User, true);
+                var role = await _userManager.GetRolesAsync(user);
+                return await CreateTokens(user, role.FirstOrDefault(), true);
             }
             throw new ErrorException(ErrorCode.AuthorizationFailed, "Uneli ste pogrešno korisničko ime ili lozinku. Pokušajte ponovo.");
         }
@@ -67,7 +68,8 @@ namespace TestApp.Services
 
             await DeleteOldRefreshToken(user, token);
 
-            return await CreateTokens(user, UserType.User, true);
+            var role = await _userManager.GetRolesAsync(user);
+            return await CreateTokens(user, role.FirstOrDefault(), true);
         }
 
         public async Task<UserAuthData> Register(Register model)
@@ -90,7 +92,10 @@ namespace TestApp.Services
             if (!result.Succeeded)
                 throw new ErrorException(ErrorCode.UserRegistrationError, "Greška pri kreiranju korisnika. Email adresa već postoji u sistemu.");
 
-            return await CreateTokens(user, UserType.User, true);
+            await _userManager.AddToRoleAsync(user, UserRoles.Kupac);
+
+            var role = await _userManager.GetRolesAsync(user);
+            return await CreateTokens(user, role.FirstOrDefault(), true);
         }
 
         public async Task<Account> Get(HttpContext context)
@@ -242,18 +247,19 @@ namespace TestApp.Services
             if (!res.Succeeded)
                 throw new ErrorException(ErrorCode.PasswordChangeFailed, "Greška pri menjanju lozinke.");
 
-            return await CreateTokens(user, UserType.User, true);
+            var role = await _userManager.GetRolesAsync(user);
+            return await CreateTokens(user, role.FirstOrDefault(), true);
         }
 
 
-        private async Task<UserAuthData> CreateTokens(ApplicationUser user, UserType userType, bool rememberMe)
+        private async Task<UserAuthData> CreateTokens(ApplicationUser user, string userRole, bool rememberMe)
         {
             var authClaims = new List<Claim>
             {
                 new Claim(CustomClaims.UserId.ToString(),user.Id),
                 new Claim(ClaimTypes.Email,user.Email),
                 new Claim(ClaimTypes.Name, user.UserName),
-                new Claim(CustomClaims.UserType.ToString(),userType.ToString()),
+                new Claim(CustomClaims.UserRole.ToString(),userRole),
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
             };
 
@@ -279,7 +285,7 @@ namespace TestApp.Services
                 ExpiresIn = (expires - DateTime.UtcNow).TotalSeconds.ToString(),
                 Issued = DateTime.UtcNow.ToString("O"),
                 UserEmail = user.Email,
-                UserType = userType.ToString(),
+                UserRole = userRole,
                 RefreshToken = rememberMe ? refreshToken : ""
             };
         }
