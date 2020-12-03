@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace TestApp.Identity
+namespace TestApp.DB
 {
     public class RefreshToken
     {

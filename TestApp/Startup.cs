@@ -9,8 +9,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using TestApp.DB;
 using TestApp.ExceptionHandling;
-using TestApp.Identity;
 using TestApp.Models;
 using TestApp.Services;
 
@@ -42,6 +42,7 @@ namespace TestApp
             services.AddDbContext<ApplicationDbContext>(options => options.UseSqlServer(Configuration.GetConnectionString("ConnStr")));
 
             services.AddScoped<IUserService, UserService>();
+            services.AddScoped<IProductsService, ProductsService>();
             services.Configure<AppSettingsModel>(Configuration.GetSection("ApplicationSettings"));
 
             // For Identity  

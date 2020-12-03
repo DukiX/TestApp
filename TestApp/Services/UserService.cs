@@ -12,9 +12,9 @@ using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
+using TestApp.DB;
 using TestApp.Enums;
 using TestApp.ExceptionHandling;
-using TestApp.Identity;
 using TestApp.Models;
 using TestApp.Tools;
 
@@ -92,10 +92,9 @@ namespace TestApp.Services
             if (!result.Succeeded)
                 throw new ErrorException(ErrorCode.UserRegistrationError, "Greška pri kreiranju korisnika. Email adresa već postoji u sistemu.");
 
-            await _userManager.AddToRoleAsync(user, UserRoles.Kupac);
+            await _userManager.AddToRoleAsync(user, model.Role);
 
-            var role = await _userManager.GetRolesAsync(user);
-            return await CreateTokens(user, role.FirstOrDefault(), true);
+            return await CreateTokens(user, model.Role, true);
         }
 
         public async Task<Account> Get(HttpContext context)
@@ -247,8 +246,8 @@ namespace TestApp.Services
             if (!res.Succeeded)
                 throw new ErrorException(ErrorCode.PasswordChangeFailed, "Greška pri menjanju lozinke.");
 
-            var role = await _userManager.GetRolesAsync(user);
-            return await CreateTokens(user, role.FirstOrDefault(), true);
+            var role = TokensHelper.GetClaimFromJwt(context, ClaimTypes.Role);
+            return await CreateTokens(user, role, true);
         }
 
 
@@ -259,7 +258,7 @@ namespace TestApp.Services
                 new Claim(CustomClaims.UserId.ToString(),user.Id),
                 new Claim(ClaimTypes.Email,user.Email),
                 new Claim(ClaimTypes.Name, user.UserName),
-                new Claim(CustomClaims.UserRole.ToString(),userRole),
+                new Claim(ClaimTypes.Role, userRole),
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
             };
 

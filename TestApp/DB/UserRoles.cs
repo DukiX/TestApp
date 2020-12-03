@@ -1,4 +1,4 @@
-﻿namespace TestApp.Identity
+﻿namespace TestApp.DB
 {
     public static class UserRoles
     {

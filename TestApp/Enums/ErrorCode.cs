@@ -10,6 +10,7 @@
         UserUpdateError = 5,
         AvatarTooLarge = 6,
         AvatarNotFound = 7,
-        PasswordChangeFailed = 8
+        PasswordChangeFailed = 8,
+        DbError = 9
     }
 }

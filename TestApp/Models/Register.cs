@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using TestApp.DB;
 
 namespace TestApp.Models
 {
@@ -28,5 +29,7 @@ namespace TestApp.Models
 
         [Required(ErrorMessage = "Address is required")]
         public string Address { get; set; }
+
+        public string Role { get; set; } = UserRoles.Kupac;
     }
 }
