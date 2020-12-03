@@ -219,7 +219,7 @@ namespace TestApp.Services
             }
             catch (Exception)
             {
-                return null;
+                throw new ErrorException(ErrorCode.ImageNotFound, "Slika nije pronađena.");
             }
         }
 
@@ -241,7 +241,7 @@ namespace TestApp.Services
             }
             catch (Exception)
             {
-                throw new ErrorException(ErrorCode.ImageNotFound, "Slika nije pronađena.");
+                throw new ErrorException(ErrorCode.ImageNotFound, "Greška pri brisanju slike.");
             }
         }
 
