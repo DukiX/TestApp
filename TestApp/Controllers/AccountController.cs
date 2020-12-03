@@ -111,7 +111,7 @@ namespace TestApp.Controllers
         [Route("image")]
         public async Task<IActionResult> GetImage()
         {
-            var memory = await _userService.GetImage(HttpContext);
+            using var memory = await _userService.GetImage(HttpContext);
 
             if (memory == null)
                 return BadRequest("Image not found");
