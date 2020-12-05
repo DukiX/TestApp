@@ -82,7 +82,7 @@ namespace TestApp.Controllers
         }
 
         [HttpPut]
-        [Route("UploadImage/{id}")]
+        [Route("upload-image/{id}")]
         public async Task<IActionResult> UploadImage(Guid id)
         {
             var success = await _productsService.SaveImage(HttpContext, id);

@@ -134,7 +134,7 @@ namespace TestApp.Controllers
 
         [HttpPost]
         [Authorize]
-        [Route("ChangePassword")]
+        [Route("change-password")]
         public async Task<IActionResult> ChangePassword(ChangePassword model)
         {
             var authData = await _userService.ChangePassword(HttpContext, model);
