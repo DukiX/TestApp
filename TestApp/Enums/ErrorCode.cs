@@ -11,6 +11,7 @@
         ImageTooLarge = 6,
         ImageNotFound = 7,
         PasswordChangeFailed = 8,
-        DbError = 9
+        DbError = 9,
+        ProductNotFound = 10
     }
 }

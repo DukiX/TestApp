@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System;
 using System.Threading.Tasks;
 using TestApp.DB;
 using TestApp.Models;
@@ -23,7 +24,56 @@ namespace TestApp.Controllers
         [Authorize(Roles = UserRoles.Prodavac)]
         public async Task<IActionResult> Add([FromBody] InProizvodDTO model)
         {
-            var success = await _productsService.Add(model, HttpContext);
+            var product = await _productsService.Add(model, HttpContext);
+
+            if (product != null)
+                return Ok(product);
+            else
+                return BadRequest(product);
+        }
+
+        [HttpPut]
+        [Route("{id}")]
+        [Authorize(Roles = UserRoles.Prodavac)]
+        public async Task<IActionResult> Update(Guid id, [FromBody] InProizvodDTO model)
+        {
+            var product = await _productsService.Update(id, model, HttpContext);
+
+            if (product != null)
+                return Ok(product);
+            else
+                return BadRequest(product);
+        }
+
+        [HttpGet]
+        [Route("")]
+        public async Task<IActionResult> GetAll()
+        {
+            var products = await _productsService.GetAll();
+
+            if (products != null)
+                return Ok(products);
+            else
+                return BadRequest();
+        }
+
+        [HttpGet]
+        [Route("{id}")]
+        public async Task<IActionResult> Get(Guid id)
+        {
+            var product = await _productsService.Get(id);
+
+            if (product != null)
+                return Ok(product);
+            else
+                return BadRequest();
+        }
+
+        [HttpDelete]
+        [Route("{id}")]
+        public async Task<IActionResult> Delete(Guid id)
+        {
+            var success = await _productsService.Delete(id);
 
             if (success)
                 return Ok(success);
@@ -31,16 +81,16 @@ namespace TestApp.Controllers
                 return BadRequest(success);
         }
 
-        [HttpGet]
-        [Route("")]
-        public async Task<IActionResult> Get()
+        [HttpPut]
+        [Route("UploadImage/{id}")]
+        public async Task<IActionResult> UploadImage(Guid id)
         {
-            var products = await _productsService.Get();
+            var success = await _productsService.SaveImage(HttpContext, id);
 
-            if (products != null)
-                return Ok(products);
+            if (success)
+                return Ok(success);
             else
-                return BadRequest();
+                return BadRequest(success);
         }
     }
 }

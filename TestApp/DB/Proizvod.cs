@@ -1,8 +1,12 @@
-﻿namespace TestApp.DB
+﻿using System;
+using System.ComponentModel.DataAnnotations;
+
+namespace TestApp.DB
 {
     public class Proizvod
     {
-        public int Id { get; set; }
+        [Key]
+        public Guid Id { get; set; }
         public string Naziv { get; set; }
         public double Cena { get; set; }
         public string Opis { get; set; }

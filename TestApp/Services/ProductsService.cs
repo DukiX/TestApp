@@ -3,6 +3,8 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using TestApp.DB;
@@ -15,8 +17,14 @@ namespace TestApp.Services
 {
     public interface IProductsService
     {
-        Task<bool> Add(InProizvodDTO model, HttpContext context);
-        Task<List<OutProizvodDTO>> Get();
+        Task<OutProizvodDTO> Add(InProizvodDTO model, HttpContext context);
+        Task<OutProizvodDTO> Update(Guid id, InProizvodDTO model, HttpContext context);
+        Task<List<OutProizvodDTO>> GetAll();
+        Task<OutProizvodDTO> Get(Guid id);
+        Task<bool> Delete(Guid id);
+        Task<MemoryStream> GetImage(Guid id);
+        Task<bool> SaveImage(HttpContext context, Guid id);
+        bool DeleteImage(int id);
     }
 
     public class ProductsService : IProductsService
@@ -30,7 +38,7 @@ namespace TestApp.Services
             _db = db;
         }
 
-        public async Task<bool> Add(InProizvodDTO model, HttpContext context)
+        public async Task<OutProizvodDTO> Add(InProizvodDTO model, HttpContext context)
         {
             string userName = TokensHelper.GetClaimFromJwt(context, ClaimTypes.Name);
 
@@ -38,8 +46,11 @@ namespace TestApp.Services
             if (user == null)
                 throw new ErrorException(ErrorCode.UserNotFound, "Prodavac ne postoji u sistemu.");
 
+            Guid id = Guid.NewGuid();
+
             _db.Proizvodi.Add(new Proizvod
             {
+                Id = id,
                 Naziv = model.Naziv,
                 Cena = model.Cena,
                 Opis = model.Opis,
@@ -53,13 +64,52 @@ namespace TestApp.Services
             }
             catch (Exception)
             {
-                throw new ErrorException(ErrorCode.UserNotFound, "Greška pri čuvanju proizvoda u bazu podataka.");
+                throw new ErrorException(ErrorCode.DbError, "Greška pri čuvanju proizvoda u bazu podataka.");
             }
 
-            return true;
+            return new OutProizvodDTO
+            {
+                Id = id,
+                Naziv = model.Naziv,
+                Cena = model.Cena,
+                Opis = model.Opis,
+                NacinKoriscenja = model.NacinKoriscenja,
+                Prodavac = null
+            };
         }
 
-        public async Task<List<OutProizvodDTO>> Get()
+        public async Task<OutProizvodDTO> Update(Guid id, InProizvodDTO model, HttpContext context)
+        {
+            var proizvod = await _db.Proizvodi.Where(x => x.Id == id)?.Include(i => i.Prodavac).FirstOrDefaultAsync();
+            if (proizvod == null)
+                return null;
+
+            proizvod.Naziv = model.Naziv;
+            proizvod.Cena = model.Cena;
+            proizvod.Opis = model.Opis;
+            proizvod.NacinKoriscenja = model.NacinKoriscenja;
+
+            try
+            {
+                await _db.SaveChangesAsync();
+            }
+            catch (Exception)
+            {
+                throw new ErrorException(ErrorCode.DbError, "Greška pri čuvanju proizvoda u bazu podataka.");
+            }
+
+            return new OutProizvodDTO
+            {
+                Id = id,
+                Naziv = model.Naziv,
+                Cena = model.Cena,
+                Opis = model.Opis,
+                NacinKoriscenja = model.NacinKoriscenja,
+                Prodavac = null
+            };
+        }
+
+        public async Task<List<OutProizvodDTO>> GetAll()
         {
             var proizvodi = await _db.Proizvodi.Include(i => i.Prodavac).ToListAsync();
 
@@ -67,30 +117,166 @@ namespace TestApp.Services
 
             foreach (var proizvod in proizvodi)
             {
-                Account acc = null;
+                string slika = null;
 
-                if (proizvod.Prodavac != null)
-                    acc = new Account
-                    {
-                        Username = proizvod.Prodavac.UserName,
-                        Email = proizvod.Prodavac.Email,
-                        FirstName = proizvod.Prodavac.FirstName,
-                        LastName = proizvod.Prodavac.LastName,
-                        Address = proizvod.Prodavac.Address,
-                        PhoneNumber = proizvod.Prodavac.PhoneNumber
-                    };
+                try
+                {
+                    using var buffer = await GetImage(proizvod.Id);
+                    slika = Convert.ToBase64String(buffer.GetBuffer());
+                }
+                catch (Exception) { }
 
                 outProizvodi.Add(new OutProizvodDTO
                 {
+                    Id = proizvod.Id,
                     Naziv = proizvod.Naziv,
                     Cena = proizvod.Cena,
-                    Opis = proizvod.Opis,
+                    Opis = null,
                     NacinKoriscenja = proizvod.NacinKoriscenja,
-                    Prodavac = acc
+                    Prodavac = null,
+                    Slika = slika
                 });
             }
 
             return outProizvodi;
+        }
+
+        public async Task<OutProizvodDTO> Get(Guid id)
+        {
+            var proizvod = await _db.Proizvodi.Where(x => x.Id == id)?.Include(i => i.Prodavac).FirstOrDefaultAsync();
+            if (proizvod == null)
+                throw new ErrorException(ErrorCode.ProductNotFound, "Proizvod nije pronađen.");
+
+            Account acc = null;
+
+            if (proizvod.Prodavac != null)
+                acc = new Account
+                {
+                    Username = proizvod.Prodavac.UserName,
+                    Email = proizvod.Prodavac.Email,
+                    FirstName = proizvod.Prodavac.FirstName,
+                    LastName = proizvod.Prodavac.LastName,
+                    Address = proizvod.Prodavac.Address,
+                    PhoneNumber = proizvod.Prodavac.PhoneNumber
+                };
+
+            string slika = null;
+
+            try
+            {
+                using var buffer = await GetImage(id);
+                slika = Convert.ToBase64String(buffer.GetBuffer());
+            }
+            catch (Exception) { }
+
+            return new OutProizvodDTO
+            {
+                Id = proizvod.Id,
+                Naziv = proizvod.Naziv,
+                Cena = proizvod.Cena,
+                Opis = proizvod.Opis,
+                NacinKoriscenja = proizvod.NacinKoriscenja,
+                Prodavac = acc,
+                Slika = slika
+            };
+        }
+
+        public async Task<bool> Delete(Guid id)
+        {
+            var proizvod = await _db.Proizvodi.FirstOrDefaultAsync(x => x.Id == id);
+            if (proizvod == null)
+                return false;
+
+            try
+            {
+                var a = _db.Proizvodi.Remove(proizvod);
+
+                await _db.SaveChangesAsync();
+            }
+            catch (Exception)
+            {
+                throw new ErrorException(ErrorCode.DbError, "Greška pri brisanju proizvoda.");
+            }
+
+            return true;
+        }
+
+        public async Task<MemoryStream> GetImage(Guid id)
+        {
+            try
+            {
+                var path1 = Path.Combine("Resources", "Images");
+                var path = Path.Combine(path1, "Products");
+
+                string imageName = id.ToString();
+
+                var fileName = Path.Combine(path, imageName);
+
+                var memory = new MemoryStream();
+                using (var stream = new FileStream(fileName, FileMode.Open))
+                {
+                    await stream.CopyToAsync(memory);
+                }
+                memory.Position = 0;
+
+                return memory;
+            }
+            catch (Exception)
+            {
+                throw new ErrorException(ErrorCode.ImageNotFound, "Slika nije pronađena.");
+            }
+        }
+
+        public async Task<bool> SaveImage(HttpContext context, Guid id)
+        {
+            IFormFile file;
+            try
+            {
+                file = context.Request.Form.Files.FirstOrDefault(f => f.Name == "file");
+                if (file == null)
+                    throw new ErrorException(ErrorCode.ImageNotFound, "Slika nije pronađena.");
+            }
+            catch (Exception)
+            {
+                throw new ErrorException(ErrorCode.ImageNotFound, "Slika nije pronađena.");
+            }
+            if (file.Length > 100000)
+                throw new ErrorException(ErrorCode.ImageTooLarge, "Slika zauzima previše prostora.");
+
+            var path1 = Path.Combine("Resources", "Images");
+            var path = Path.Combine(path1, "Products");
+
+            string imageName = id.ToString();
+
+            var fullPath = Path.Combine(path, imageName);
+
+            using (var stream = new FileStream(fullPath, FileMode.Create))
+            {
+                await file.CopyToAsync(stream);
+            }
+
+            return true;
+        }
+
+        public bool DeleteImage(int id)
+        {
+            try
+            {
+                var path1 = Path.Combine("Resources", "Images");
+                var path = Path.Combine(path1, "Products");
+
+                string imageName = id.ToString();
+
+                var fullPath = Path.Combine(path, imageName);
+
+                File.Delete(fullPath);
+
+                return true;
+            }
+            catch (Exception)
+            {
+                throw new ErrorException(ErrorCode.ImageNotFound, "Greška pri brisanju slike.");
+            }
         }
     }
 }

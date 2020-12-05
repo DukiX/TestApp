@@ -105,6 +105,8 @@ namespace TestApp.Services
             if (user == null)
                 throw new ErrorException(ErrorCode.UserNotFound, "Korisnik ne postoji u sistemu.");
 
+            var role = TokensHelper.GetClaimFromJwt(context, ClaimTypes.Role);
+
             return new Account
             {
                 Username = user.UserName,
@@ -112,7 +114,8 @@ namespace TestApp.Services
                 FirstName = user.FirstName,
                 LastName = user.LastName,
                 Address = user.Address,
-                PhoneNumber = user.PhoneNumber
+                PhoneNumber = user.PhoneNumber,
+                Role = role
             };
         }
 
