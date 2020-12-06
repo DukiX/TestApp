@@ -111,12 +111,12 @@ namespace TestApp.Controllers
         [Route("image")]
         public async Task<IActionResult> GetImage()
         {
-            using var memory = await _userService.GetImage(HttpContext);
+            var image = await _userService.GetImage(HttpContext);
 
-            if (memory == null)
+            if (image == null)
                 return BadRequest("Image not found");
 
-            return Ok(Convert.ToBase64String(memory.GetBuffer()));
+            return Ok(Convert.ToBase64String(image));
         }
 
         [HttpDelete]

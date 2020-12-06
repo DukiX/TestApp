@@ -29,7 +29,7 @@ namespace TestApp.Services
         Task<Account> Update(HttpContext context, Update model);
         Task<bool> Delete(HttpContext context);
         Task<bool> SaveImage(HttpContext context);
-        Task<MemoryStream> GetImage(HttpContext context);
+        Task<byte[]> GetImage(HttpContext context);
         bool DeleteImage(HttpContext context);
         Task<UserAuthData> ChangePassword(HttpContext context, ChangePassword change);
     }
@@ -197,7 +197,7 @@ namespace TestApp.Services
             return true;
         }
 
-        public async Task<MemoryStream> GetImage(HttpContext context)
+        public async Task<byte[]> GetImage(HttpContext context)
         {
             try
             {
@@ -211,14 +211,14 @@ namespace TestApp.Services
 
                 var fileName = Path.Combine(path, imageName);
 
-                var memory = new MemoryStream();
+                using var memory = new MemoryStream();
                 using (var stream = new FileStream(fileName, FileMode.Open))
                 {
                     await stream.CopyToAsync(memory);
                 }
                 memory.Position = 0;
 
-                return memory;
+                return memory.GetBuffer();
             }
             catch (Exception)
             {
