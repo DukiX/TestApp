@@ -58,6 +58,19 @@ namespace TestApp.Controllers
         }
 
         [HttpGet]
+        [Route("User")]
+        [Authorize(Roles = UserRoles.Prodavac)]
+        public async Task<IActionResult> GetAllForUser()
+        {
+            var products = await _productsService.GetAllForUser(HttpContext);
+
+            if (products != null)
+                return Ok(products);
+            else
+                return BadRequest();
+        }
+
+        [HttpGet]
         [Route("{id}")]
         public async Task<IActionResult> Get(Guid id)
         {

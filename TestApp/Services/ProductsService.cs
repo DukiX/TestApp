@@ -20,6 +20,7 @@ namespace TestApp.Services
         Task<OutProizvodDTO> Add(InProizvodDTO model, HttpContext context);
         Task<OutProizvodDTO> Update(Guid id, InProizvodDTO model, HttpContext context);
         Task<List<OutProizvodDTO>> GetAll();
+        Task<List<OutProizvodDTO>> GetAllForUser(HttpContext context);
         Task<OutProizvodDTO> Get(Guid id);
         Task<bool> Delete(Guid id);
         Task<MemoryStream> GetImage(Guid id);
@@ -112,6 +113,40 @@ namespace TestApp.Services
         public async Task<List<OutProizvodDTO>> GetAll()
         {
             var proizvodi = await _db.Proizvodi.Include(i => i.Prodavac).ToListAsync();
+
+            List<OutProizvodDTO> outProizvodi = new List<OutProizvodDTO>();
+
+            foreach (var proizvod in proizvodi)
+            {
+                string slika = null;
+
+                try
+                {
+                    using var buffer = await GetImage(proizvod.Id);
+                    slika = Convert.ToBase64String(buffer.GetBuffer());
+                }
+                catch (Exception) { }
+
+                outProizvodi.Add(new OutProizvodDTO
+                {
+                    Id = proizvod.Id,
+                    Naziv = proizvod.Naziv,
+                    Cena = proizvod.Cena,
+                    Opis = null,
+                    NacinKoriscenja = proizvod.NacinKoriscenja,
+                    Prodavac = null,
+                    Slika = slika
+                });
+            }
+
+            return outProizvodi;
+        }
+
+        public async Task<List<OutProizvodDTO>> GetAllForUser(HttpContext context)
+        {
+            string userId = TokensHelper.GetClaimFromJwt(context, CustomClaims.UserId.ToString());
+
+            var proizvodi = await _db.Proizvodi.Include(i => i.Prodavac).Where(p => p.Prodavac.Id == userId).ToListAsync();
 
             List<OutProizvodDTO> outProizvodi = new List<OutProizvodDTO>();
 
