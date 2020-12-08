@@ -177,7 +177,7 @@ namespace TestApp.Services
             {
                 throw new ErrorException(ErrorCode.ImageNotFound, "Slika nije pronađena.");
             }
-            if (file.Length > 100000)
+            if (file.Length > 10000000)
                 throw new ErrorException(ErrorCode.ImageTooLarge, "Slika zauzima previše prostora.");
 
             string ext = Path.GetExtension(file.FileName);
