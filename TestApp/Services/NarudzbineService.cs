@@ -125,6 +125,7 @@ namespace TestApp.Services
                         }
                     });
                 }
+                outListaNarudzbina.Add(outNar);
             }
 
             return outListaNarudzbina;
