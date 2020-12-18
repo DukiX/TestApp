@@ -3,15 +3,17 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using TestApp.DB;
 
 namespace TestApp.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20201218150408_narudzbina")]
+    partial class narudzbina
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -257,10 +259,10 @@ namespace TestApp.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<string>("KupacId")
+                    b.Property<string>("NarucilacId")
                         .HasColumnType("nvarchar(450)");
 
-                    b.Property<string>("ProdavacId")
+                    b.Property<string>("PrimalacId")
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<int>("StatusNarudzbine")
@@ -271,9 +273,9 @@ namespace TestApp.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("KupacId");
+                    b.HasIndex("NarucilacId");
 
-                    b.HasIndex("ProdavacId");
+                    b.HasIndex("PrimalacId");
 
                     b.ToTable("Narudzbine");
                 });
@@ -386,7 +388,7 @@ namespace TestApp.Migrations
             modelBuilder.Entity("TestApp.DB.ElementKorpe", b =>
                 {
                     b.HasOne("TestApp.DB.Narudzbina", null)
-                        .WithMany("ListaElemenata")
+                        .WithMany("ElementKorpe")
                         .HasForeignKey("NarudzbinaId");
 
                     b.HasOne("TestApp.DB.Proizvod", "Proizvod")
@@ -396,13 +398,13 @@ namespace TestApp.Migrations
 
             modelBuilder.Entity("TestApp.DB.Narudzbina", b =>
                 {
-                    b.HasOne("TestApp.DB.ApplicationUser", "Kupac")
+                    b.HasOne("TestApp.DB.ApplicationUser", "Narucilac")
                         .WithMany()
-                        .HasForeignKey("KupacId");
+                        .HasForeignKey("NarucilacId");
 
-                    b.HasOne("TestApp.DB.ApplicationUser", "Prodavac")
+                    b.HasOne("TestApp.DB.ApplicationUser", "Primalac")
                         .WithMany()
-                        .HasForeignKey("ProdavacId");
+                        .HasForeignKey("PrimalacId");
                 });
 
             modelBuilder.Entity("TestApp.DB.Proizvod", b =>

@@ -6,6 +6,7 @@ namespace TestApp.DB
     public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     {
         public DbSet<Proizvod> Proizvodi { get; set; }
+        public DbSet<Narudzbina> Narudzbine { get; set; }
 
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
         {
