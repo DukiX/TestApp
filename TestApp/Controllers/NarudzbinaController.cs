@@ -30,5 +30,18 @@ namespace TestApp.Controllers
 
             return Ok(outNarudzbinaDTOs);
         }
+
+        [HttpGet]
+        [Route("")]
+        [Authorize(Roles = UserRoles.Prodavac)]
+        public async Task<IActionResult> GetAll()
+        {
+            var outNarudzbinaDTOs = await _narudzbinaService.GetAllNarudzbina(HttpContext);
+
+            if (outNarudzbinaDTOs == null)
+                return BadRequest();
+
+            return Ok(outNarudzbinaDTOs);
+        }
     }
 }

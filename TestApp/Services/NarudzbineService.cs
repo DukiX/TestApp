@@ -17,6 +17,7 @@ namespace TestApp.Services
     public interface INarudzbinaService
     {
         Task<List<OutNarudzbinaDTO>> AddNarudzbina(InNarudzbinaDTO model, HttpContext context);
+        Task<List<OutProdavacNarudzbinaDTO>> GetAllNarudzbina(HttpContext context);
     }
 
     public class NarudzbineService : INarudzbinaService
@@ -129,6 +130,57 @@ namespace TestApp.Services
             }
 
             return outListaNarudzbina;
+        }
+
+        public async Task<List<OutProdavacNarudzbinaDTO>> GetAllNarudzbina(HttpContext context)
+        {
+            string userName = TokensHelper.GetClaimFromJwt(context, ClaimTypes.Name);
+
+            var user = await _userManager.FindByNameAsync(userName);
+            if (user == null)
+                throw new ErrorException(ErrorCode.UserNotFound, "Prodavac ne postoji u sistemu.");
+
+            var narudzbine = await _db.Narudzbine.Include(n => n.Kupac).Include(n => n.Prodavac)
+                .Include(n => n.ListaElemenata).ThenInclude(k => k.Proizvod).Where(k => k.Prodavac == user).ToListAsync();
+
+            List<OutProdavacNarudzbinaDTO> outProdavacNarudzbine = new List<OutProdavacNarudzbinaDTO>();
+
+            foreach (var narudzbina in narudzbine)
+            {
+                var outProdavacNarudzbina = new OutProdavacNarudzbinaDTO
+                {
+                    StatusNarudzbine = narudzbina.StatusNarudzbine,
+                    VremeIsporukeUDanima = narudzbina.VremeIsporukeUDanima,
+                    Kupac = new Account
+                    {
+                        Address = narudzbina.Kupac.Address,
+                        Email = narudzbina.Kupac.Email,
+                        FirstName = narudzbina.Kupac.FirstName,
+                        LastName = narudzbina.Kupac.LastName,
+                        PhoneNumber = narudzbina.Kupac.PhoneNumber
+                    },
+                    ListaElemenata = new List<OutElementKorpeDTO>()
+                };
+                foreach (var el in narudzbina.ListaElemenata)
+                {
+                    outProdavacNarudzbina.ListaElemenata.Add(new OutElementKorpeDTO
+                    {
+                        Kolicina = el.Kolicina,
+                        Proizvod = new OutProizvodDTO
+                        {
+                            Id = el.Proizvod.Id,
+                            Naziv = el.Proizvod.Naziv,
+                            Cena = el.Proizvod.Cena,
+                            Opis = el.Proizvod.Opis,
+                            NacinKoriscenja = el.Proizvod.NacinKoriscenja,
+                            Prodavac = null
+                        }
+                    });
+                }
+                outProdavacNarudzbine.Add(outProdavacNarudzbina);
+            }
+
+            return outProdavacNarudzbine;
         }
     }
 }
