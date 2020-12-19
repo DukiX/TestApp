@@ -111,17 +111,16 @@ namespace TestApp.Services
                 };
                 foreach (var el in narudzbina.ListaElemenata)
                 {
-                    var pr = _db.Proizvodi.FirstOrDefault(p => p.Id == el.Id);
                     outNar.ListaElemenata.Add(new OutElementKorpeDTO
                     {
                         Kolicina = el.Kolicina,
                         Proizvod = new OutProizvodDTO
                         {
-                            Id = pr.Id,
-                            Naziv = pr.Naziv,
-                            Cena = pr.Cena,
-                            Opis = pr.Opis,
-                            NacinKoriscenja = pr.NacinKoriscenja,
+                            Id = el.Proizvod.Id,
+                            Naziv = el.Proizvod.Naziv,
+                            Cena = el.Proizvod.Cena,
+                            Opis = el.Proizvod.Opis,
+                            NacinKoriscenja = el.Proizvod.NacinKoriscenja,
                             Prodavac = null
                         }
                     });
