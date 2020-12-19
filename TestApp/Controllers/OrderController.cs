@@ -10,13 +10,13 @@ namespace TestApp.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class NarudzbinaController : ControllerBase
+    public class OrderController : ControllerBase
     {
-        private readonly INarudzbinaService _narudzbinaService;
+        private readonly IOrderService _orderService;
 
-        public NarudzbinaController(INarudzbinaService narudzbinaService)
+        public OrderController(IOrderService orderService)
         {
-            _narudzbinaService = narudzbinaService;
+            _orderService = orderService;
         }
 
         [HttpPost]
@@ -24,7 +24,7 @@ namespace TestApp.Controllers
         [Authorize(Roles = UserRoles.Kupac)]
         public async Task<IActionResult> Add([FromBody] InNarudzbinaDTO model)
         {
-            var outNarudzbinaDTOs = await _narudzbinaService.AddNarudzbina(model, HttpContext);
+            var outNarudzbinaDTOs = await _orderService.Add(model, HttpContext);
 
             if (outNarudzbinaDTOs == null)
                 return BadRequest();
@@ -37,7 +37,7 @@ namespace TestApp.Controllers
         [Authorize(Roles = UserRoles.Prodavac)]
         public async Task<IActionResult> GetAll()
         {
-            var outNarudzbinaDTOs = await _narudzbinaService.GetAllNarudzbina(HttpContext);
+            var outNarudzbinaDTOs = await _orderService.GetAll(HttpContext);
 
             if (outNarudzbinaDTOs == null)
                 return BadRequest();
@@ -50,7 +50,7 @@ namespace TestApp.Controllers
         [Authorize(Roles = UserRoles.Prodavac)]
         public async Task<IActionResult> Update(Guid id, [FromBody] UpdateNarudzbinaDTO model)
         {
-            var outNarudzbinaDTO = await _narudzbinaService.UpdateNarudzbina(id, model);
+            var outNarudzbinaDTO = await _orderService.Update(id, model, HttpContext);
 
             if (outNarudzbinaDTO == null)
                 return BadRequest();
@@ -63,7 +63,7 @@ namespace TestApp.Controllers
         [Authorize(Roles = UserRoles.Prodavac)]
         public async Task<IActionResult> Get(Guid id)
         {
-            var outNarudzbinaDTO = await _narudzbinaService.GetNarudzbina(id);
+            var outNarudzbinaDTO = await _orderService.Get(id, HttpContext);
 
             if (outNarudzbinaDTO == null)
                 return BadRequest();

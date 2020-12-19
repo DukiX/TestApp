@@ -14,26 +14,26 @@ using TestApp.Tools;
 
 namespace TestApp.Services
 {
-    public interface INarudzbinaService
+    public interface IOrderService
     {
-        Task<List<OutNarudzbinaDTO>> AddNarudzbina(InNarudzbinaDTO model, HttpContext context);
-        Task<List<OutProdavacNarudzbinaDTO>> GetAllNarudzbina(HttpContext context);
-        Task<OutProdavacNarudzbinaDTO> UpdateNarudzbina(Guid id, UpdateNarudzbinaDTO model);
-        Task<OutProdavacNarudzbinaDTO> GetNarudzbina(Guid id);
+        Task<List<OutNarudzbinaDTO>> Add(InNarudzbinaDTO model, HttpContext context);
+        Task<List<OutProdavacNarudzbinaDTO>> GetAll(HttpContext context);
+        Task<OutProdavacNarudzbinaDTO> Update(Guid id, UpdateNarudzbinaDTO model, HttpContext context);
+        Task<OutProdavacNarudzbinaDTO> Get(Guid id, HttpContext context);
     }
 
-    public class NarudzbineService : INarudzbinaService
+    public class OrderService : IOrderService
     {
         private readonly ApplicationDbContext _db;
         private readonly UserManager<ApplicationUser> _userManager;
 
-        public NarudzbineService(UserManager<ApplicationUser> userManager, ApplicationDbContext db)
+        public OrderService(UserManager<ApplicationUser> userManager, ApplicationDbContext db)
         {
             _userManager = userManager;
             _db = db;
         }
 
-        public async Task<List<OutNarudzbinaDTO>> AddNarudzbina(InNarudzbinaDTO model, HttpContext context)
+        public async Task<List<OutNarudzbinaDTO>> Add(InNarudzbinaDTO model, HttpContext context)
         {
             if (model == null || model.ListaElemenata == null || model.ListaElemenata.Count == 0)
                 return null;
@@ -134,7 +134,7 @@ namespace TestApp.Services
             return outListaNarudzbina;
         }
 
-        public async Task<List<OutProdavacNarudzbinaDTO>> GetAllNarudzbina(HttpContext context)
+        public async Task<List<OutProdavacNarudzbinaDTO>> GetAll(HttpContext context)
         {
             string userName = TokensHelper.GetClaimFromJwt(context, ClaimTypes.Name);
 
@@ -189,13 +189,22 @@ namespace TestApp.Services
             return outProdavacNarudzbine;
         }
 
-        public async Task<OutProdavacNarudzbinaDTO> UpdateNarudzbina(Guid id, UpdateNarudzbinaDTO model)
+        public async Task<OutProdavacNarudzbinaDTO> Update(Guid id, UpdateNarudzbinaDTO model, HttpContext context)
         {
             var narudzbina = await _db.Narudzbine.Include(n => n.Kupac).Include(n => n.Prodavac)
                 .Include(n => n.ListaElemenata).ThenInclude(k => k.Proizvod).FirstOrDefaultAsync(a => a.Id == id);
 
             if (narudzbina == null)
                 return null;
+
+            string userName = TokensHelper.GetClaimFromJwt(context, ClaimTypes.Name);
+
+            var user = await _userManager.FindByNameAsync(userName);
+            if (user == null)
+                throw new ErrorException(ErrorCode.UserNotFound, "Prodavac ne postoji u sistemu.");
+
+            if (narudzbina.Prodavac.Id != user.Id)
+                throw new ErrorException(ErrorCode.OrderAccessError, "Nemate pravo da pristupite ovoj narudzbini.");
 
             narudzbina.StatusNarudzbine = model.StatusNarudzbine;
             narudzbina.VremeIsporukeUDanima = model.VremeIsporukeUDanima;
@@ -244,13 +253,22 @@ namespace TestApp.Services
             return outProdavacNarudzbina;
         }
 
-        public async Task<OutProdavacNarudzbinaDTO> GetNarudzbina(Guid id)
+        public async Task<OutProdavacNarudzbinaDTO> Get(Guid id, HttpContext context)
         {
             var narudzbina = await _db.Narudzbine.Include(n => n.Kupac).Include(n => n.Prodavac)
                 .Include(n => n.ListaElemenata).ThenInclude(k => k.Proizvod).FirstOrDefaultAsync(a => a.Id == id);
 
             if (narudzbina == null)
                 return null;
+
+            string userName = TokensHelper.GetClaimFromJwt(context, ClaimTypes.Name);
+
+            var user = await _userManager.FindByNameAsync(userName);
+            if (user == null)
+                throw new ErrorException(ErrorCode.UserNotFound, "Prodavac ne postoji u sistemu.");
+
+            if (narudzbina.Prodavac.Id != user.Id && narudzbina.Kupac.Id != user.Id)
+                throw new ErrorException(ErrorCode.OrderAccessError, "Nemate pravo da pristupite ovoj narudzbini.");
 
             var outProdavacNarudzbina = new OutProdavacNarudzbinaDTO
             {

@@ -44,7 +44,7 @@ namespace TestApp
 
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<IProductsService, ProductsService>();
-            services.AddScoped<INarudzbinaService, NarudzbineService>();
+            services.AddScoped<IOrderService, OrderService>();
             services.Configure<AppSettingsModel>(Configuration.GetSection("ApplicationSettings"));
 
             // For Identity  

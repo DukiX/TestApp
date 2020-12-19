@@ -12,6 +12,7 @@
         ImageNotFound = 7,
         PasswordChangeFailed = 8,
         DbError = 9,
-        ProductNotFound = 10
+        ProductNotFound = 10,
+        OrderAccessError = 11
     }
 }
