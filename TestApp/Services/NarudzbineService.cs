@@ -67,6 +67,7 @@ namespace TestApp.Services
                         VremeIsporukeUDanima = null,
                         Prodavac = proizvod.Prodavac
                     };
+                    listaNarudzbina.Add(narudzbinaZaOvogProdavca);
                 }
                 else
                 {
@@ -90,7 +91,7 @@ namespace TestApp.Services
             }
             catch (Exception)
             {
-                throw new ErrorException(ErrorCode.DbError, "Greška pri čuvanju proizvoda u bazu podataka.");
+                throw new ErrorException(ErrorCode.DbError, "Greška pri čuvanju narudzbine u bazu podataka.");
             }
 
             var outListaNarudzbina = new List<OutNarudzbinaDTO>();
