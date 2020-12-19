@@ -18,6 +18,8 @@ namespace TestApp.Services
     {
         Task<List<OutNarudzbinaDTO>> AddNarudzbina(InNarudzbinaDTO model, HttpContext context);
         Task<List<OutProdavacNarudzbinaDTO>> GetAllNarudzbina(HttpContext context);
+        Task<OutProdavacNarudzbinaDTO> UpdateNarudzbina(Guid id, UpdateNarudzbinaDTO model);
+        Task<OutProdavacNarudzbinaDTO> GetNarudzbina(Guid id);
     }
 
     public class NarudzbineService : INarudzbinaService
@@ -141,7 +143,10 @@ namespace TestApp.Services
                 throw new ErrorException(ErrorCode.UserNotFound, "Prodavac ne postoji u sistemu.");
 
             var narudzbine = await _db.Narudzbine.Include(n => n.Kupac).Include(n => n.Prodavac)
-                .Include(n => n.ListaElemenata).ThenInclude(k => k.Proizvod).Where(k => k.Prodavac == user).ToListAsync();
+                .Include(n => n.ListaElemenata).ThenInclude(k => k.Proizvod).Where(k => k.Prodavac == user)?.ToListAsync();
+
+            if (narudzbine == null)
+                return null;
 
             List<OutProdavacNarudzbinaDTO> outProdavacNarudzbine = new List<OutProdavacNarudzbinaDTO>();
 
@@ -149,6 +154,7 @@ namespace TestApp.Services
             {
                 var outProdavacNarudzbina = new OutProdavacNarudzbinaDTO
                 {
+                    Id = narudzbina.Id,
                     StatusNarudzbine = narudzbina.StatusNarudzbine,
                     VremeIsporukeUDanima = narudzbina.VremeIsporukeUDanima,
                     Kupac = new Account
@@ -181,6 +187,104 @@ namespace TestApp.Services
             }
 
             return outProdavacNarudzbine;
+        }
+
+        public async Task<OutProdavacNarudzbinaDTO> UpdateNarudzbina(Guid id, UpdateNarudzbinaDTO model)
+        {
+            var narudzbina = await _db.Narudzbine.Include(n => n.Kupac).Include(n => n.Prodavac)
+                .Include(n => n.ListaElemenata).ThenInclude(k => k.Proizvod).FirstOrDefaultAsync(a => a.Id == id);
+
+            if (narudzbina == null)
+                return null;
+
+            narudzbina.StatusNarudzbine = model.StatusNarudzbine;
+            narudzbina.VremeIsporukeUDanima = model.VremeIsporukeUDanima;
+
+            try
+            {
+                await _db.SaveChangesAsync();
+            }
+            catch (Exception)
+            {
+                throw new ErrorException(ErrorCode.DbError, "Greška pri čuvanju narudzbine u bazu podataka.");
+            }
+
+            var outProdavacNarudzbina = new OutProdavacNarudzbinaDTO
+            {
+                Id = narudzbina.Id,
+                StatusNarudzbine = narudzbina.StatusNarudzbine,
+                VremeIsporukeUDanima = narudzbina.VremeIsporukeUDanima,
+                Kupac = new Account
+                {
+                    Address = narudzbina.Kupac.Address,
+                    Email = narudzbina.Kupac.Email,
+                    FirstName = narudzbina.Kupac.FirstName,
+                    LastName = narudzbina.Kupac.LastName,
+                    PhoneNumber = narudzbina.Kupac.PhoneNumber
+                },
+                ListaElemenata = new List<OutElementKorpeDTO>()
+            };
+            foreach (var el in narudzbina.ListaElemenata)
+            {
+                outProdavacNarudzbina.ListaElemenata.Add(new OutElementKorpeDTO
+                {
+                    Kolicina = el.Kolicina,
+                    Proizvod = new OutProizvodDTO
+                    {
+                        Id = el.Proizvod.Id,
+                        Naziv = el.Proizvod.Naziv,
+                        Cena = el.Proizvod.Cena,
+                        Opis = el.Proizvod.Opis,
+                        NacinKoriscenja = el.Proizvod.NacinKoriscenja,
+                        Prodavac = null
+                    }
+                });
+            }
+
+            return outProdavacNarudzbina;
+        }
+
+        public async Task<OutProdavacNarudzbinaDTO> GetNarudzbina(Guid id)
+        {
+            var narudzbina = await _db.Narudzbine.Include(n => n.Kupac).Include(n => n.Prodavac)
+                .Include(n => n.ListaElemenata).ThenInclude(k => k.Proizvod).FirstOrDefaultAsync(a => a.Id == id);
+
+            if (narudzbina == null)
+                return null;
+
+            var outProdavacNarudzbina = new OutProdavacNarudzbinaDTO
+            {
+                Id = narudzbina.Id,
+                StatusNarudzbine = narudzbina.StatusNarudzbine,
+                VremeIsporukeUDanima = narudzbina.VremeIsporukeUDanima,
+                Prodavac = new Account
+                {
+                    Address = narudzbina.Prodavac.Address,
+                    Email = narudzbina.Prodavac.Email,
+                    FirstName = narudzbina.Prodavac.FirstName,
+                    LastName = narudzbina.Prodavac.LastName,
+                    PhoneNumber = narudzbina.Prodavac.PhoneNumber
+                },
+                ListaElemenata = new List<OutElementKorpeDTO>()
+            };
+            foreach (var el in narudzbina.ListaElemenata)
+            {
+                outProdavacNarudzbina.ListaElemenata.Add(new OutElementKorpeDTO
+                {
+                    Kolicina = el.Kolicina,
+                    Proizvod = new OutProizvodDTO
+                    {
+                        Id = el.Proizvod.Id,
+                        Naziv = el.Proizvod.Naziv,
+                        Cena = el.Proizvod.Cena,
+                        Opis = el.Proizvod.Opis,
+                        NacinKoriscenja = el.Proizvod.NacinKoriscenja,
+                        Prodavac = null
+                    }
+                });
+            }
+
+            return outProdavacNarudzbina;
         }
     }
 }

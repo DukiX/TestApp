@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System;
 using System.Threading.Tasks;
 using TestApp.DB;
 using TestApp.Models;
@@ -42,6 +43,32 @@ namespace TestApp.Controllers
                 return BadRequest();
 
             return Ok(outNarudzbinaDTOs);
+        }
+
+        [HttpPut]
+        [Route("")]
+        [Authorize(Roles = UserRoles.Prodavac)]
+        public async Task<IActionResult> Update(Guid id, [FromBody] UpdateNarudzbinaDTO model)
+        {
+            var outNarudzbinaDTO = await _narudzbinaService.UpdateNarudzbina(id, model);
+
+            if (outNarudzbinaDTO == null)
+                return BadRequest();
+
+            return Ok(outNarudzbinaDTO);
+        }
+
+        [HttpGet]
+        [Route("{id}")]
+        [Authorize(Roles = UserRoles.Prodavac)]
+        public async Task<IActionResult> Get(Guid id)
+        {
+            var outNarudzbinaDTO = await _narudzbinaService.GetNarudzbina(id);
+
+            if (outNarudzbinaDTO == null)
+                return BadRequest();
+
+            return Ok(outNarudzbinaDTO);
         }
     }
 }
