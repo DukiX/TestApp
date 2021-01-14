@@ -13,5 +13,6 @@ namespace TestApp.DB
         public ApplicationUser Prodavac { get; set; }
         public StatusNarudzbine StatusNarudzbine { get; set; }
         public int? VremeIsporukeUDanima { get; set; }
+        public DateTime? DatumNarudzbine { get; set; }
     }
 }

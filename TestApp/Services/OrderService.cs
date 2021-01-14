@@ -17,7 +17,8 @@ namespace TestApp.Services
     public interface IOrderService
     {
         Task<List<OutNarudzbinaDTO>> Add(InNarudzbinaDTO model, HttpContext context);
-        Task<List<OutProdavacNarudzbinaDTO>> GetAll(HttpContext context);
+        Task<List<OutProdavacNarudzbinaDTO>> GetAllForSeller(HttpContext context);
+        Task<List<OutProdavacNarudzbinaDTO>> GetAllForBuyer(HttpContext context);
         Task<OutProdavacNarudzbinaDTO> Update(Guid id, UpdateNarudzbinaDTO model, HttpContext context);
         Task<OutProdavacNarudzbinaDTO> Get(Guid id, HttpContext context);
     }
@@ -85,6 +86,7 @@ namespace TestApp.Services
 
             foreach (var narudzbina in listaNarudzbina)
             {
+                narudzbina.DatumNarudzbine = DateTime.UtcNow;
                 _db.Narudzbine.Add(narudzbina);
             }
 
@@ -134,7 +136,7 @@ namespace TestApp.Services
             return outListaNarudzbina;
         }
 
-        public async Task<List<OutProdavacNarudzbinaDTO>> GetAll(HttpContext context)
+        public async Task<List<OutProdavacNarudzbinaDTO>> GetAllForSeller(HttpContext context)
         {
             string userName = TokensHelper.GetClaimFromJwt(context, ClaimTypes.Name);
 
@@ -165,7 +167,80 @@ namespace TestApp.Services
                         LastName = narudzbina.Kupac.LastName,
                         PhoneNumber = narudzbina.Kupac.PhoneNumber
                     },
-                    ListaElemenata = new List<OutElementKorpeDTO>()
+                    Prodavac = new Account
+                    {
+                        Address = narudzbina.Prodavac.Address,
+                        Email = narudzbina.Prodavac.Email,
+                        FirstName = narudzbina.Prodavac.FirstName,
+                        LastName = narudzbina.Prodavac.LastName,
+                        PhoneNumber = narudzbina.Prodavac.PhoneNumber
+                    },
+                    ListaElemenata = new List<OutElementKorpeDTO>(),
+                    DatumNarudzbine = narudzbina.DatumNarudzbine
+                };
+                foreach (var el in narudzbina.ListaElemenata)
+                {
+                    outProdavacNarudzbina.ListaElemenata.Add(new OutElementKorpeDTO
+                    {
+                        Kolicina = el.Kolicina,
+                        Proizvod = new OutProizvodDTO
+                        {
+                            Id = el.Proizvod.Id,
+                            Naziv = el.Proizvod.Naziv,
+                            Cena = el.Proizvod.Cena,
+                            Opis = el.Proizvod.Opis,
+                            NacinKoriscenja = el.Proizvod.NacinKoriscenja,
+                            Prodavac = null
+                        }
+                    });
+                }
+                outProdavacNarudzbine.Add(outProdavacNarudzbina);
+            }
+
+            return outProdavacNarudzbine;
+        }
+
+        public async Task<List<OutProdavacNarudzbinaDTO>> GetAllForBuyer(HttpContext context)
+        {
+            string userName = TokensHelper.GetClaimFromJwt(context, ClaimTypes.Name);
+
+            var user = await _userManager.FindByNameAsync(userName);
+            if (user == null)
+                throw new ErrorException(ErrorCode.UserNotFound, "Prodavac ne postoji u sistemu.");
+
+            var narudzbine = await _db.Narudzbine.Include(n => n.Kupac).Include(n => n.Prodavac)
+                .Include(n => n.ListaElemenata).ThenInclude(k => k.Proizvod).Where(k => k.Kupac == user)?.ToListAsync();
+
+            if (narudzbine == null)
+                return null;
+
+            List<OutProdavacNarudzbinaDTO> outProdavacNarudzbine = new List<OutProdavacNarudzbinaDTO>();
+
+            foreach (var narudzbina in narudzbine)
+            {
+                var outProdavacNarudzbina = new OutProdavacNarudzbinaDTO
+                {
+                    Id = narudzbina.Id,
+                    StatusNarudzbine = narudzbina.StatusNarudzbine,
+                    VremeIsporukeUDanima = narudzbina.VremeIsporukeUDanima,
+                    Kupac = new Account
+                    {
+                        Address = narudzbina.Kupac.Address,
+                        Email = narudzbina.Kupac.Email,
+                        FirstName = narudzbina.Kupac.FirstName,
+                        LastName = narudzbina.Kupac.LastName,
+                        PhoneNumber = narudzbina.Kupac.PhoneNumber
+                    },
+                    Prodavac = new Account
+                    {
+                        Address = narudzbina.Prodavac.Address,
+                        Email = narudzbina.Prodavac.Email,
+                        FirstName = narudzbina.Prodavac.FirstName,
+                        LastName = narudzbina.Prodavac.LastName,
+                        PhoneNumber = narudzbina.Prodavac.PhoneNumber
+                    },
+                    ListaElemenata = new List<OutElementKorpeDTO>(),
+                    DatumNarudzbine = narudzbina.DatumNarudzbine
                 };
                 foreach (var el in narudzbina.ListaElemenata)
                 {
@@ -283,7 +358,16 @@ namespace TestApp.Services
                     LastName = narudzbina.Prodavac.LastName,
                     PhoneNumber = narudzbina.Prodavac.PhoneNumber
                 },
-                ListaElemenata = new List<OutElementKorpeDTO>()
+                Kupac = new Account
+                {
+                    Address = narudzbina.Kupac.Address,
+                    Email = narudzbina.Kupac.Email,
+                    FirstName = narudzbina.Kupac.FirstName,
+                    LastName = narudzbina.Kupac.LastName,
+                    PhoneNumber = narudzbina.Kupac.PhoneNumber
+                },
+                ListaElemenata = new List<OutElementKorpeDTO>(),
+                DatumNarudzbine = narudzbina.DatumNarudzbine
             };
             foreach (var el in narudzbina.ListaElemenata)
             {

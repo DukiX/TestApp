@@ -33,11 +33,24 @@ namespace TestApp.Controllers
         }
 
         [HttpGet]
-        [Route("")]
+        [Route("for-seller")]
         [Authorize(Roles = UserRoles.Prodavac)]
-        public async Task<IActionResult> GetAll()
+        public async Task<IActionResult> GetAllSeller()
         {
-            var outNarudzbinaDTOs = await _orderService.GetAll(HttpContext);
+            var outNarudzbinaDTOs = await _orderService.GetAllForSeller(HttpContext);
+
+            if (outNarudzbinaDTOs == null)
+                return BadRequest();
+
+            return Ok(outNarudzbinaDTOs);
+        }
+
+        [HttpGet]
+        [Route("for-buyer")]
+        [Authorize(Roles = UserRoles.Kupac)]
+        public async Task<IActionResult> GetAllBuyer()
+        {
+            var outNarudzbinaDTOs = await _orderService.GetAllForBuyer(HttpContext);
 
             if (outNarudzbinaDTOs == null)
                 return BadRequest();
