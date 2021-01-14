@@ -306,7 +306,8 @@ namespace TestApp.Services
                     LastName = narudzbina.Kupac.LastName,
                     PhoneNumber = narudzbina.Kupac.PhoneNumber
                 },
-                ListaElemenata = new List<OutElementKorpeDTO>()
+                ListaElemenata = new List<OutElementKorpeDTO>(),
+                DatumNarudzbine = narudzbina.DatumNarudzbine
             };
             foreach (var el in narudzbina.ListaElemenata)
             {

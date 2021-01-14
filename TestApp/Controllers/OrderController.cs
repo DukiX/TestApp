@@ -59,7 +59,7 @@ namespace TestApp.Controllers
         }
 
         [HttpPut]
-        [Route("")]
+        [Route("{id}")]
         [Authorize(Roles = UserRoles.Prodavac)]
         public async Task<IActionResult> Update(Guid id, [FromBody] UpdateNarudzbinaDTO model)
         {
