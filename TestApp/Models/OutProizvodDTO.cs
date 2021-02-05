@@ -1,4 +1,5 @@
 ﻿using System;
+using TestApp.Enums;
 
 namespace TestApp.Models
 {
@@ -8,7 +9,8 @@ namespace TestApp.Models
         public string Naziv { get; set; }
         public double Cena { get; set; }
         public string Opis { get; set; }
-        public string NacinKoriscenja { get; set; }
+        //[JsonConverter(typeof(JsonStringEnumConverter))]
+        public NacinKoriscenja? NacinKoriscenja { get; set; }
         public Account Prodavac { get; set; }
         public string Slika { get; set; }
     }

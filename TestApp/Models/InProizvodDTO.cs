@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using TestApp.Enums;
 
 namespace TestApp.Models
 {
@@ -11,6 +12,7 @@ namespace TestApp.Models
         [Required]
         public string Opis { get; set; }
         [Required]
-        public string NacinKoriscenja { get; set; }
+        //[JsonConverter(typeof(JsonStringEnumConverter))]
+        public NacinKoriscenja? NacinKoriscenja { get; set; }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
+using TestApp.Enums;
 
 namespace TestApp.DB
 {
@@ -10,7 +11,7 @@ namespace TestApp.DB
         public string Naziv { get; set; }
         public double Cena { get; set; }
         public string Opis { get; set; }
-        public string NacinKoriscenja { get; set; }
+        public NacinKoriscenja? NacinKoriscenja { get; set; }
         public ApplicationUser Prodavac { get; set; }
     }
 }
