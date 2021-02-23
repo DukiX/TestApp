@@ -73,7 +73,7 @@ namespace TestApp.Controllers
 
         [HttpGet]
         [Route("{id}")]
-        [Authorize(Roles = UserRoles.Prodavac)]
+        [Authorize]
         public async Task<IActionResult> Get(Guid id)
         {
             var outNarudzbinaDTO = await _orderService.Get(id, HttpContext);
