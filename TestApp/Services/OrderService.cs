@@ -176,7 +176,8 @@ namespace TestApp.Services
                         PhoneNumber = narudzbina.Prodavac.PhoneNumber
                     },
                     ListaElemenata = new List<OutElementKorpeDTO>(),
-                    DatumNarudzbine = narudzbina.DatumNarudzbine
+                    DatumNarudzbine = narudzbina.DatumNarudzbine,
+                    DatumOdobrenjaNarudzbine = narudzbina.DatumPotvrdeNarudzbine
                 };
                 foreach (var el in narudzbina.ListaElemenata)
                 {
@@ -240,7 +241,8 @@ namespace TestApp.Services
                         PhoneNumber = narudzbina.Prodavac.PhoneNumber
                     },
                     ListaElemenata = new List<OutElementKorpeDTO>(),
-                    DatumNarudzbine = narudzbina.DatumNarudzbine
+                    DatumNarudzbine = narudzbina.DatumNarudzbine,
+                    DatumOdobrenjaNarudzbine = narudzbina.DatumPotvrdeNarudzbine
                 };
                 foreach (var el in narudzbina.ListaElemenata)
                 {
@@ -283,6 +285,14 @@ namespace TestApp.Services
 
             narudzbina.StatusNarudzbine = model.StatusNarudzbine;
             narudzbina.VremeIsporukeUDanima = model.VremeIsporukeUDanima;
+            if (narudzbina.StatusNarudzbine == StatusNarudzbine.Odobrena)
+            {
+                narudzbina.DatumPotvrdeNarudzbine = DateTime.UtcNow;
+            }
+            else if (narudzbina.StatusNarudzbine == StatusNarudzbine.Odbijena)
+            {
+                narudzbina.DatumPotvrdeNarudzbine = null;
+            }
 
             try
             {
@@ -307,7 +317,8 @@ namespace TestApp.Services
                     PhoneNumber = narudzbina.Kupac.PhoneNumber
                 },
                 ListaElemenata = new List<OutElementKorpeDTO>(),
-                DatumNarudzbine = narudzbina.DatumNarudzbine
+                DatumNarudzbine = narudzbina.DatumNarudzbine,
+                DatumOdobrenjaNarudzbine = narudzbina.DatumPotvrdeNarudzbine
             };
             foreach (var el in narudzbina.ListaElemenata)
             {
@@ -368,7 +379,8 @@ namespace TestApp.Services
                     PhoneNumber = narudzbina.Kupac.PhoneNumber
                 },
                 ListaElemenata = new List<OutElementKorpeDTO>(),
-                DatumNarudzbine = narudzbina.DatumNarudzbine
+                DatumNarudzbine = narudzbina.DatumNarudzbine,
+                DatumOdobrenjaNarudzbine = narudzbina.DatumPotvrdeNarudzbine
             };
             foreach (var el in narudzbina.ListaElemenata)
             {

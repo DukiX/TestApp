@@ -13,5 +13,6 @@ namespace TestApp.Models
         public StatusNarudzbine StatusNarudzbine { get; set; }
         public int? VremeIsporukeUDanima { get; set; }
         public DateTime? DatumNarudzbine { get; set; }
+        public DateTime? DatumOdobrenjaNarudzbine { get; set; }
     }
 }
