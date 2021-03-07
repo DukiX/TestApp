@@ -1,4 +1,4 @@
-﻿using TestApp.DB;
+﻿using TestApp.Enums;
 
 namespace TestApp.Models
 {

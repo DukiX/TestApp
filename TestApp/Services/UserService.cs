@@ -158,6 +158,12 @@ namespace TestApp.Services
 
             var res = await _userManager.DeleteAsync(user);
 
+            try
+            {
+                DeleteImage(context);
+            }
+            catch (Exception) { }
+
             if (!res.Succeeded)
                 return false;
 

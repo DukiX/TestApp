@@ -6,9 +6,11 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
 using System;
+using System.IO;
 using System.Text;
 using TestApp.DB;
 using TestApp.ExceptionHandling;
@@ -99,7 +101,12 @@ namespace TestApp
             app.UseCors("MyPolicy");
 
             app.UseHttpsRedirection();
-
+            app.UseStaticFiles(new StaticFileOptions
+            {
+                FileProvider = new PhysicalFileProvider(
+                    Path.Combine(env.ContentRootPath, "Resources")),
+                RequestPath = "/resources"
+            });
             app.UseRouting();
 
             app.UseAuthentication();

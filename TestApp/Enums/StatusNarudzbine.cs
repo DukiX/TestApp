@@ -1,4 +1,4 @@
-﻿namespace TestApp.DB
+﻿namespace TestApp.Enums
 {
     public enum StatusNarudzbine
     {
