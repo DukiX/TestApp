@@ -25,7 +25,7 @@ namespace TestApp.Services
         Task<bool> Delete(Guid id);
         Task<MemoryStream> GetImage(Guid id);
         Task<bool> SaveImage(HttpContext context, Guid id);
-        bool DeleteImage(int id);
+        bool DeleteImage(Guid id);
     }
 
     public class ProductsService : IProductsService
@@ -233,6 +233,8 @@ namespace TestApp.Services
                 throw new ErrorException(ErrorCode.DbError, "Greška pri brisanju proizvoda.");
             }
 
+            DeleteImage(id);
+
             return true;
         }
 
@@ -293,7 +295,7 @@ namespace TestApp.Services
             return true;
         }
 
-        public bool DeleteImage(int id)
+        public bool DeleteImage(Guid id)
         {
             try
             {
