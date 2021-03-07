@@ -233,7 +233,11 @@ namespace TestApp.Services
                 throw new ErrorException(ErrorCode.DbError, "Greška pri brisanju proizvoda.");
             }
 
-            DeleteImage(id);
+            try
+            {
+                DeleteImage(id);
+            }
+            catch (Exception) { }
 
             return true;
         }
