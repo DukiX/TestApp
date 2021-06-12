@@ -22,14 +22,14 @@ namespace TestApp.Controllers
         [HttpPost]
         [Route("")]
         [Authorize(Roles = UserRoles.Kupac)]
-        public async Task<IActionResult> Add([FromBody] InNarudzbinaDTO model)
+        public async Task<IActionResult> Add([FromBody] InOrderDTO model)
         {
-            var outNarudzbinaDTOs = await _orderService.Add(model, HttpContext);
+            var outOrderDTOs = await _orderService.Add(model, HttpContext);
 
-            if (outNarudzbinaDTOs == null)
+            if (outOrderDTOs == null)
                 return BadRequest();
 
-            return Ok(outNarudzbinaDTOs);
+            return Ok(outOrderDTOs);
         }
 
         [HttpGet]

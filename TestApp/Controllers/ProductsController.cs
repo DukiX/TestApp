@@ -22,7 +22,7 @@ namespace TestApp.Controllers
         [HttpPost]
         [Route("")]
         [Authorize(Roles = UserRoles.Prodavac)]
-        public async Task<IActionResult> Add([FromBody] InProizvodDTO model)
+        public async Task<IActionResult> Add([FromBody] InProductDTO model)
         {
             var product = await _productsService.Add(model, HttpContext);
 
@@ -35,7 +35,7 @@ namespace TestApp.Controllers
         [HttpPut]
         [Route("{id}")]
         [Authorize(Roles = UserRoles.Prodavac)]
-        public async Task<IActionResult> Update(Guid id, [FromBody] InProizvodDTO model)
+        public async Task<IActionResult> Update(Guid id, [FromBody] InProductDTO model)
         {
             var product = await _productsService.Update(id, model, HttpContext);
 

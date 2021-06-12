@@ -3,7 +3,7 @@ using TestApp.Enums;
 
 namespace TestApp.Models
 {
-    public class InProizvodDTO
+    public class InProductDTO
     {
         [Required]
         public string Naziv { get; set; }
@@ -12,7 +12,6 @@ namespace TestApp.Models
         [Required]
         public string Opis { get; set; }
         [Required]
-        //[JsonConverter(typeof(JsonStringEnumConverter))]
         public NacinKoriscenja? NacinKoriscenja { get; set; }
     }
 }

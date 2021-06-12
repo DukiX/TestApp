@@ -24,7 +24,7 @@ namespace TestApp.Services
     {
         Task<UserAuthData> Authenticate(AuthenticateRequest model);
         Task<UserAuthData> RefreshToken(string token);
-        Task<UserAuthData> Register(Register model);
+        Task<UserAuthData> Register(RegisterDTO model);
         Task<Account> Get(HttpContext context);
         Task<Account> Update(HttpContext context, Update model);
         Task<bool> Delete(HttpContext context);
@@ -72,7 +72,7 @@ namespace TestApp.Services
             return await CreateTokens(user, role.FirstOrDefault(), true);
         }
 
-        public async Task<UserAuthData> Register(Register model)
+        public async Task<UserAuthData> Register(RegisterDTO model)
         {
             var userExists = await _userManager.FindByNameAsync(model.Username);
             if (userExists != null)

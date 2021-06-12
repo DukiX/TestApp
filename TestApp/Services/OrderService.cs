@@ -16,7 +16,7 @@ namespace TestApp.Services
 {
     public interface IOrderService
     {
-        Task<List<OutNarudzbinaDTO>> Add(InNarudzbinaDTO model, HttpContext context);
+        Task<List<OutOrderDTO>> Add(InOrderDTO model, HttpContext context);
         Task<List<OutProdavacNarudzbinaDTO>> GetAllForSeller(HttpContext context);
         Task<List<OutProdavacNarudzbinaDTO>> GetAllForBuyer(HttpContext context);
         Task<OutProdavacNarudzbinaDTO> Update(Guid id, UpdateNarudzbinaDTO model, HttpContext context);
@@ -34,7 +34,7 @@ namespace TestApp.Services
             _db = db;
         }
 
-        public async Task<List<OutNarudzbinaDTO>> Add(InNarudzbinaDTO model, HttpContext context)
+        public async Task<List<OutOrderDTO>> Add(InOrderDTO model, HttpContext context)
         {
             if (model == null || model.ListaElemenata == null || model.ListaElemenata.Count == 0)
                 return null;
@@ -99,10 +99,10 @@ namespace TestApp.Services
                 throw new ErrorException(ErrorCode.DbError, "Greška pri čuvanju narudzbine u bazu podataka.");
             }
 
-            var outListaNarudzbina = new List<OutNarudzbinaDTO>();
+            var outListaNarudzbina = new List<OutOrderDTO>();
             foreach (var narudzbina in listaNarudzbina)
             {
-                var outNar = new OutNarudzbinaDTO
+                var outNar = new OutOrderDTO
                 {
                     Id = narudzbina.Id,
                     Prodavac = new Account

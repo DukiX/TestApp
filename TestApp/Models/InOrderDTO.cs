@@ -2,7 +2,7 @@
 
 namespace TestApp.Models
 {
-    public class InNarudzbinaDTO
+    public class InOrderDTO
     {
         public List<InElementKorpeDTO> ListaElemenata { get; set; }
     }

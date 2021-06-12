@@ -70,7 +70,7 @@ namespace TestApp.Controllers
 
         [HttpPost]
         [Route("register")]
-        public async Task<IActionResult> Register([FromBody] Register model)
+        public async Task<IActionResult> Register([FromBody] RegisterDTO model)
         {
             var authData = await _userService.Register(model);
 

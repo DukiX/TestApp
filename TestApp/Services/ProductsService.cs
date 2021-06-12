@@ -17,8 +17,8 @@ namespace TestApp.Services
 {
     public interface IProductsService
     {
-        Task<OutProizvodDTO> Add(InProizvodDTO model, HttpContext context);
-        Task<OutProizvodDTO> Update(Guid id, InProizvodDTO model, HttpContext context);
+        Task<OutProizvodDTO> Add(InProductDTO model, HttpContext context);
+        Task<OutProizvodDTO> Update(Guid id, InProductDTO model, HttpContext context);
         Task<List<OutProizvodDTO>> GetAll();
         Task<List<OutProizvodDTO>> GetAllForUser(HttpContext context);
         Task<OutProizvodDTO> Get(Guid id);
@@ -39,7 +39,7 @@ namespace TestApp.Services
             _db = db;
         }
 
-        public async Task<OutProizvodDTO> Add(InProizvodDTO model, HttpContext context)
+        public async Task<OutProizvodDTO> Add(InProductDTO model, HttpContext context)
         {
             string userName = TokensHelper.GetClaimFromJwt(context, ClaimTypes.Name);
 
@@ -79,7 +79,7 @@ namespace TestApp.Services
             };
         }
 
-        public async Task<OutProizvodDTO> Update(Guid id, InProizvodDTO model, HttpContext context)
+        public async Task<OutProizvodDTO> Update(Guid id, InProductDTO model, HttpContext context)
         {
             var proizvod = await _db.Proizvodi.Where(x => x.Id == id)?.Include(i => i.Prodavac).FirstOrDefaultAsync();
             if (proizvod == null)
